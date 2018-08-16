@@ -1,0 +1,97 @@
+version: "3"
+volumes:
+  db: ~
+  jira: ~
+  confluence: ~
+  bamboo: ~
+services:
+  bamboo:
+    restart: always
+    build: ./bamboo
+    image: wobblecode/docker-bamboo
+    ports:
+      - "8085:8085"
+    links:
+      - database
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - bamboo:/var/atlassian/application-data/bamboo
+      - ./bamboo/ssh:/.ssh
+    environment:
+      #X_PROXY_SCHEME: https
+      #X_PROXY_PORT: 443
+      #X_PROXY_NAME: bamboo.wobblecode.com
+      #X_SECURE: "true"
+      X_PATH: /
+      VIRTUAL_HOST: "deploy.nb300.io"
+      LETSENCRYPT_HOST: "deploy.nb300.io"
+      LETSENCRYPT_EMAIL: "iam@dimkk.ru"
+  confluence:
+    restart: always
+    build: ./confluence
+    image: wobblecode/docker-confluence
+    ports:
+      - "8090:8090"
+      - "8091:8091"
+    links:
+      - database
+    volumes:
+      - confluence:/var/atlassian/application-data/confluence
+    environment:
+      #X_PROXY_SCHEME: https
+      #X_PROXY_PORT: 443
+      #X_PROXY_NAME: confluence.wobblecode.com
+      #X_SECURE: "true"
+      X_PATH: /
+      VIRTUAL_HOST: "memos.nb300.io"
+      LETSENCRYPT_HOST: "memos.nb300.io"
+      LETSENCRYPT_EMAIL: "iam@dimkk.ru"
+  jira:
+    restart: always
+    build: ./jira
+    image: wobblecode/docker-jira
+    environment:
+      JAVA_OPTS: -Xms384m -Xmx1024m
+      CATALINA_OPTS: -Datlassian.plugins.enable.wait=1200
+      #X_PROXY_SCHEME: https
+      #X_PROXY_PORT: 443
+      #X_PROXY_NAME: jira.wobblecode.com
+      #X_PATH: /
+      VIRTUAL_HOST: "tasks.nb300.io"
+      LETSENCRYPT_HOST: "tasks.nb300.io"
+      LETSENCRYPT_EMAIL: "iam@dimkk.ru"
+    ports:
+      - "8080:8080"
+    links:
+      - database
+    volumes:
+      - jira:/var/atlassian/application-data/jira
+  bitbucket5:
+    image: atlassian/bitbucket-server:latest
+    container_name: bitbucket
+    ports:
+      - "7990:7990"
+      - "7999:7999"
+    volumes:
+      - ./bitbucket-home:/var/atlassian/application-data/bitbucket
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - SERVER_SCHEME=http
+      - SERVER_SECURE=false
+      - VIRTUAL_HOST=src.nb300.io
+      - LETSENCRYPT_HOST=src.nb300.io
+      - LETSENCRYPT_EMAIL=iam@dimkk.ru
+    links:
+      - database
+  database:
+    restart: always
+    image: postgres:9.5
+    expose:
+      - 5432
+    ports:
+      - "2345:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./jira/setup-db.sh:/docker-entrypoint-initdb.d/setup-jira-db.sh
+      - ./confluence/setup-db.sh:/docker-entrypoint-initdb.d/setup-confluence-db.sh
+      - ./bamboo/setup-db.sh:/docker-entrypoint-initdb.d/setup-bamboo-db.sh
