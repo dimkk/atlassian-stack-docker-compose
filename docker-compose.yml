@@ -7,7 +7,7 @@ volumes:
 services:
   bamboo:
     restart: always
-    build: ./bamboo
+    #build: ./bamboo
     image: wobblecode/docker-bamboo
     ports:
       - "8085:8085"
@@ -28,7 +28,7 @@ services:
       LETSENCRYPT_EMAIL: "iam@dimkk.ru"
   confluence:
     restart: always
-    build: ./confluence
+    #build: ./confluence
     image: wobblecode/docker-confluence
     ports:
       - "8090:8090"
@@ -48,7 +48,7 @@ services:
       LETSENCRYPT_EMAIL: "iam@dimkk.ru"
   jira:
     restart: always
-    build: ./jira
+    #build: ./jira
     image: wobblecode/docker-jira
     environment:
       JAVA_OPTS: -Xms384m -Xmx1024m
