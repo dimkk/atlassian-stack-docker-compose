@@ -51,15 +51,16 @@ services:
     #build: ./jira
     image: wobblecode/docker-jira
     environment:
-      JAVA_OPTS: -Xms384m -Xmx1024m
-      CATALINA_OPTS: -Datlassian.plugins.enable.wait=1200
-      #X_PROXY_SCHEME: https
-      #X_PROXY_PORT: 443
-      #X_PROXY_NAME: jira.wobblecode.com
-      #X_PATH: /
-      VIRTUAL_HOST: "tasks.nb300.io"
-      LETSENCRYPT_HOST: "tasks.nb300.io"
-      LETSENCRYPT_EMAIL: "iam@dimkk.ru"
+      - JAVA_OPTS=-Xms384m -Xmx1024m
+      - CATALINA_OPTS=-Datlassian.plugins.enable.wait=1200
+      - X_PROXY_SCHEME=http
+      - X_PROXY_PORT=443
+      - X_PROXY_NAME=tasks.nb300.io
+      - X_SECURE=false
+      - X_PATH=/
+      - VIRTUAL_HOST=tasks.nb300.io
+      - LETSENCRYPT_HOST=tasks.nb300.io
+      - LETSENCRYPT_EMAIL=iam@dimkk.ru
     ports:
       - "8080:8080"
     links:
@@ -95,3 +96,4 @@ services:
       - ./jira/setup-db.sh:/docker-entrypoint-initdb.d/setup-jira-db.sh
       - ./confluence/setup-db.sh:/docker-entrypoint-initdb.d/setup-confluence-db.sh
       - ./bamboo/setup-db.sh:/docker-entrypoint-initdb.d/setup-bamboo-db.sh
+
